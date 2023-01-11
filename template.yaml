@@ -38,11 +38,11 @@ Resources:
             BucketName: !Ref S3UploadBucket
         ## This permission allows the Lambda function to request signed URLs
         ## for objects that will be publicly readable. Uncomment if you want this ACL.
-        # - Statement:
-        #   - Effect: Allow
-        #     Resource: !Sub 'arn:aws:s3:::${S3UploadBucket}/'
-        #     Action:
-        #       - s3:putObjectAcl
+        - Statement:
+          - Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${S3UploadBucket}/'
+            Action:
+              - s3:putObjectAcl
       Events:
         UploadAssetAPI:
           Type: HttpApi

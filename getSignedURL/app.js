@@ -17,7 +17,7 @@
 
 const AWS = require('aws-sdk')
 AWS.config.update({ region: process.env.AWS_REGION })
-const s3 = new AWS.S3()
+const s3 = new AWS.S3({signatureVersion: 'v4'})
 
 // Change this value to adjust the signed URL's expiration
 const URL_EXPIRATION_SECONDS = 300
@@ -29,19 +29,25 @@ exports.handler = async (event) => {
 
 const getUploadURL = async function(event) {
   const randomID = parseInt(Math.random() * 10000000)
-  const Key = `${randomID}.jpg`
-
+  console.log("Lambda event:",event);
   // Get signed URL from S3
+  if(!event.hasOwnProperty("queryStringParameters") || !event.queryStringParameters.hasOwnProperty("id")){
+    return {
+      message: "id query parameter is required."
+    }
+  }
+  const chunks = event.queryStringParameters.id.split("-");
+  const Key = `${chunks.join("/")}/${chunks[chunks.length-1]}.svg`;
   const s3Params = {
     Bucket: process.env.UploadBucket,
     Key,
     Expires: URL_EXPIRATION_SECONDS,
-    ContentType: 'image/jpeg',
-
+    ContentType: 'image/svg+xml',
+    ContentDisposition: 'inline',
     // This ACL makes the uploaded object publicly readable. You must also uncomment
     // the extra permission for the Lambda function in the SAM template.
 
-    // ACL: 'public-read'
+    ACL: 'public-read'
   }
 
   console.log('Params: ', s3Params)
