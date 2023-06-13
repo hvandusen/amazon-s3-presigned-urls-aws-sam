@@ -28,7 +28,6 @@ exports.handler = async (event) => {
 }
 
 const getUploadURL = async function(event) {
-  const randomID = parseInt(Math.random() * 10000000)
   console.log("Lambda event:",event);
   // Get signed URL from S3
   if(!event.hasOwnProperty("queryStringParameters") || !event.queryStringParameters.hasOwnProperty("id")){
@@ -37,13 +36,27 @@ const getUploadURL = async function(event) {
     }
   }
   const chunks = event.queryStringParameters.id.split("-");
-  const Key = `${chunks.join("/")}/${chunks[chunks.length-1]}.svg`;
+  const last = chunks[chunks.length-1];
+  let Key;// = `${chunks.join("/")}/${chunks[chunks.length-1]}.svg`;
+  let folders = chunks.slice(0,chunks.length-1).join("/");
+  if(chunks[0] === "metaobjects"){
+    Key = `${folders}/${chunks[chunks.length-1]}.json`;
+  } else if(chunks.length>1){ 
+    Key = `${folders}/${chunks[chunks.length-1]}.svg`;
+  } else {
+    Key = `${chunks[0]}.svg`;
+  }
+
+
+
+  //application/json
+  
   const s3Params = {
     Bucket: process.env.UploadBucket,
     Key,
     Expires: URL_EXPIRATION_SECONDS,
     ContentType: 'image/svg+xml',
-    ContentDisposition: 'inline',
+    // ContentDisposition: 'inline',
     // This ACL makes the uploaded object publicly readable. You must also uncomment
     // the extra permission for the Lambda function in the SAM template.
 
